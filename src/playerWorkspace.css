@@ -1,0 +1,308 @@
+/* Expanded desktop player: two usable columns, one shared bottom transport. */
+@media (min-width: 900px) and (min-height: 621px) {
+  .player-sheet .player-panel {
+    display: grid;
+    grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr);
+    grid-template-rows: minmax(0, 1fr);
+    align-items: stretch;
+    gap: 32px;
+    padding: 24px 32px;
+    overflow: hidden;
+    background: var(--nm-background);
+  }
+  .player-panel .player-content {
+    display: flex;
+    flex-direction: column;
+    grid-column: 1;
+    grid-row: 1;
+    min-width: 0;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 0 4px 24px;
+    scrollbar-width: thin;
+  }
+  .player-panel:not(.panel-open) .player-content {
+    grid-column: 1 / -1;
+    width: min(100%, 540px);
+    justify-self: center;
+  }
+  .player-panel .player-topline { flex: 0 0 auto; margin: 0 0 18px; }
+  .player-panel .player-topline p { visibility: hidden; }
+  .player-panel .art-stage {
+    flex: 0 0 auto;
+    width: min(100%, 42vh, 460px);
+    aspect-ratio: 1;
+    margin: 0;
+    align-self: center;
+  }
+  .player-panel .track-copy { margin-top: 18px; }
+  .player-panel .track-copy h1 { font-size: clamp(26px, 2.4vw, 34px); font-weight: 500; }
+  .player-panel .track-copy .artist { font-size: 17px; font-weight: 400; }
+  .player-panel .wave-row { flex: 0 0 auto; margin-top: 18px; }
+  .player-panel .quality-row { flex: 0 0 auto; margin-block: 14px; flex-wrap: wrap; }
+  .player-panel .transport { display: none; }
+  .player-sheet .player-panel.queue-open .queue-overlay,
+  .player-sheet .player-panel.lyrics-open .lyrics-overlay {
+    position: relative;
+    inset: auto;
+    grid-column: 2;
+    grid-row: 1;
+    min-width: 0;
+    min-height: 0;
+    padding: 0 0 0 24px;
+    background: transparent;
+    box-shadow: none;
+    border-left: 1px solid var(--nm-border);
+  }
+  .player-panel .queue-overlay-header h2 { font-size: 26px; font-weight: 500; }
+  .player-panel .queue-header-actions { flex-wrap: wrap; }
+  .player-panel .lyrics-lines { gap: 16px; }
+  .player-panel .lyrics-lines button,
+  .player-panel .lyrics-lines p {
+    color: var(--nm-muted-foreground);
+    text-align: center;
+    font-size: clamp(22px, 2vw, 30px);
+    font-weight: 450;
+    line-height: 1.45;
+    padding-block: 16px;
+  }
+  .player-panel .lyrics-lines button.current {
+    color: var(--nm-accent);
+    background: transparent;
+    text-shadow: none;
+    transform: none;
+  }
+  .player-panel .lyrics-lines button:focus-visible {
+    outline: 2px solid var(--nm-focus);
+    outline-offset: -2px;
+  }
+}
+
+
+/* Compact desktop has a persistent transport but insufficient width for the
+   old artwork/metadata grid. Keep one scrollable column below the inspector. */
+@media (min-width: 600px) and (max-width: 899px) and (min-height: 621px) {
+  .player-sheet .player-panel {
+    display: block;
+    padding: 20px 28px 24px;
+    overflow-y: auto;
+    background: var(--nm-background);
+  }
+  .player-panel .player-content {
+    display: flex;
+    flex-direction: column;
+    width: min(100%, 540px);
+    min-width: 0;
+    margin-inline: auto;
+  }
+  .player-panel .grabber { display: none; }
+  .player-panel .player-topline { flex: 0 0 auto; margin: 0 0 18px; }
+  .player-panel .player-topline p { visibility: hidden; }
+  .player-panel .art-stage {
+    flex: 0 0 auto;
+    width: min(100%, 38vh, 340px);
+    aspect-ratio: 1;
+    margin: 0;
+    align-self: center;
+  }
+  .player-panel .track-copy { margin-top: 18px; }
+  .player-panel .track-copy h1 { font-size: 28px; font-weight: 500; }
+  .player-panel .track-copy .artist { font-size: 17px; font-weight: 400; }
+  .player-panel .wave-row { flex: 0 0 auto; margin-top: 18px; }
+  .player-panel .quality-row { flex: 0 0 auto; margin-block: 14px; flex-wrap: wrap; }
+  .player-panel .transport { display: none; }
+  .player-sheet .player-panel .queue-overlay-transport { display: none; }
+  .player-sheet .player-panel.panel-open { overflow: hidden; }
+}
+
+/* Artwork-led phone player. Keep the desktop inspector and short-landscape
+   workspace intact; all actions use the existing playback authority. */
+.player-panel .player-quick-actions { justify-content: flex-start; gap: 8px; }
+.player-panel .player-quick-actions > button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; width: auto; min-width: 44px; height: 44px; padding: 0 14px; border-radius: 24px; font-size: 13px; }
+.player-panel .player-quick-actions > button:first-child { padding-inline: 12px; }
+.player-panel .player-quick-actions .player-actions-anchor { margin-left: auto; }
+.player-panel .player-quick-actions svg { width: 20px; height: 20px; }
+
+@media (max-width: 599px) and (orientation: portrait) {
+  .player-sheet .player-panel {
+    --nm-foreground: #fafafa;
+    --nm-muted-foreground: #bfc0c3;
+    --nm-background: #101113;
+    --nm-focus: #fafafa;
+    background: #101113;
+    color: #fafafa;
+    padding: 0;
+    width: 100%;
+    max-width: none;
+    height: 100dvh;
+    max-height: 100dvh;
+    border-radius: 0;
+    overflow-y: auto;
+  }
+  .player-sheet .player-content { position: relative; display: flex; flex-direction: column; width: 100%; min-height: 100%; padding: 0 24px max(24px, env(safe-area-inset-bottom)); isolation: isolate; }
+  .player-sheet .player-content .grabber { display: none; }
+  .player-sheet .player-topline { position: relative; z-index: 2; order: 0; flex-direction: row-reverse; margin: 0 -8px; padding-top: max(12px, calc(env(safe-area-inset-top) + 8px)); min-height: 64px; }
+  .player-sheet .player-topline button { min-width: 44px; min-height: 44px; color: #fff; background: #10111366; border-radius: 50%; }
+  .player-sheet .player-topline-tools { gap: 8px; }
+  .player-sheet .art-stage { position: absolute; z-index: -1; inset: 0 0 auto; width: 100%; height: max(440px, 72dvh); margin: 0; max-height: none; aspect-ratio: auto; box-shadow: none; }
+  .player-sheet .art-stage::before { display: none; }
+  .player-sheet .art-stage::after { content: ''; position: absolute; z-index: 2; inset: 0; background: linear-gradient(180deg, #10111330 0%, transparent 25%, #10111325 45%, #101113d9 78%, #101113 100%); filter: none; opacity: 1; border-radius: 0; }
+  .player-sheet .cover-art { width: 100%; height: 100%; max-height: none; object-fit: cover; object-position: center top; border-radius: 0; box-shadow: none; }
+  .player-sheet .player-details { display: flex; flex-direction: column; margin-top: max(210px, calc(46dvh - 64px)); min-width: 0; }
+  .player-sheet .track-copy { order: 0; text-align: left; margin: 0 0 18px; }
+  .player-sheet .track-copy h1 { font-size: clamp(27px, 7.5vw, 36px); line-height: 1.12; font-weight: 750; letter-spacing: -.035em; overflow-wrap: anywhere; margin-bottom: 7px; }
+  .player-sheet .track-copy p { font-size: 14px; line-height: 1.4; }
+  .player-sheet .track-copy .artist { font-size: 17px; font-weight: 500; margin-bottom: 4px; }
+  .player-sheet .player-quick-actions { order: 1; margin: 0 0 4px; flex-wrap: wrap; }
+  .player-sheet .wave-row { order: 2; grid-template-columns: 1fr 1fr; gap: 0; margin: 0 0 12px; min-height: 58px; font-size: 12px; font-weight: 450; color: #c7c7ca; }
+  .player-sheet .wave-row .progress-rail { grid-row: 1; grid-column: 1 / -1; height: 44px; }
+  .player-sheet .wave-row > span { grid-row: 2; }
+  .player-sheet .wave-row > span:last-child { grid-column: 2; }
+  .player-sheet .transport { order: 3; margin: 0 0 18px; min-height: 76px; }
+  .player-sheet .transport .play-button { width: 76px; height: 76px; }
+  .player-sheet .quality-row { order: 4; margin: 0 0 12px; font-size: 11px; color: #bfc0c3; }
+  .player-sheet .player-notice, .player-sheet .playback-warning { order: 5; }
+  .player-sheet .sonic-strip { order: 6; padding: 8px 0; font-size: 11px; }
+}
+@media (max-width: 599px) and (orientation: portrait) {
+  .player-sheet .player-topline { display: flex; justify-content: space-between; }
+  .player-sheet .player-quick-actions .player-actions-anchor > button { width: 44px; height: 44px; border-radius: 50%; }
+}
+/* Phone controls share their appearance; each orientation keeps its own geometry. */
+@media (max-width: 599px) and (orientation: portrait), (orientation: landscape) and (max-height: 620px) {
+  .player-sheet .transport .play-button { border: 0; border-radius: 50%; color: var(--nm-accent-foreground); background: var(--nm-accent); backdrop-filter: none; }
+  .player-sheet .transport button { color: #f4f4f5; }
+  .player-sheet .transport button.active { color: #ffb7a0; }
+  .player-sheet .player-quick-actions button { color: #f5f5f5; background: #ffffff17; backdrop-filter: none; }
+  .player-sheet .player-quick-actions button.active { color: #ffb7a0; background: #ffffff26; }
+}
+@media (max-width: 359px) and (orientation: portrait), (max-width: 599px) and (orientation: portrait) and (max-height: 700px) {
+  .player-sheet .player-details { margin-top: max(100px, calc(33dvh - 64px)); }
+  .player-sheet .art-stage { height: 65dvh; }
+  .player-sheet .player-quick-actions { gap: 5px; }
+  .player-sheet .player-quick-actions > button { padding-inline: 8px; font-size: 12px; }
+}
+@media (max-width: 599px) and (orientation: portrait) and (max-height: 700px) {
+  .player-sheet .art-stage::after { background: linear-gradient(180deg, #10111330, #10111340 25%, #101113b3 45%, #101113 85%); }
+}
+
+.player-actions-scrim { position: fixed; inset: 0; z-index: 9998; border: 0; background: #0008; }
+.player-action-panel.actions { z-index: 9999; }
+.player-action-panel button { display: flex; align-items: center; gap: 12px; }
+.player-action-panel button svg { flex-shrink: 0; }
+.player-action-featured { border-bottom: 1px solid var(--nm-border); }
+.player-action-panel.opens-drawer { border-radius: 24px 24px 0 0; padding: 24px 20px max(24px, env(safe-area-inset-bottom)); overflow-y: auto; overscroll-behavior: contain; background: var(--nm-surface, #101419); animation: track-drawer-enter var(--nm-motion-sheet) var(--nm-motion-ease); transition: transform var(--nm-motion-sheet) var(--nm-motion-ease); }
+.player-action-panel.opens-drawer .player-drawer-handle {display:flex;align-items:center;justify-content:center;width:100%;height:44px;min-height:44px;margin:-20px 0 12px;padding:0;border:0;background:transparent;touch-action:none;cursor:grab;}
+.player-drawer-handle span {width:36px;height:4px;border-radius:4px;background:var(--nm-muted-foreground);}
+.player-topline .player-actions-anchor {margin-left:auto;}
+.player-topline .player-actions-anchor > button {background:rgba(8,12,18,.58);backdrop-filter:blur(16px);color:white;border-radius:50%;}
+.opens-drawer .player-action-featured { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; padding-bottom: 22px; margin-bottom: 8px; }
+.opens-drawer .player-action-featured button { flex-direction: column; justify-content: center; text-align: center; font-size: 12px; padding: 16px 6px; min-height: 90px; border: 0; border-radius: 14px; background: color-mix(in srgb, var(--nm-foreground) 6%, transparent); }
+.opens-drawer .player-action-content > button { width: 100%; min-height: 52px; border: 0; text-align: left; }
+@keyframes track-drawer-enter { from { transform: translateY(30%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .player-action-panel.opens-drawer { animation: none; } }
+@media (max-width: 899px) {
+ .player-sheet .player-topline { border: 0; flex-direction: row; }
+ .player-sheet .player-topline-tools { display: none; }
+ .player-sheet .player-quick-actions { flex-wrap: nowrap; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; justify-content: flex-start; gap: 10px; padding-block: 6px; }
+ .player-sheet .player-quick-actions > * { flex-shrink: 0; }
+ .player-sheet .player-quick-actions .output-trigger-remote { color: var(--nm-accent); }
+ .player-sheet .player-actions-anchor { margin-left: 0; }
+}
+
+.player-rating-actions { display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); gap: 4px; padding: 8px 0; border-bottom: 1px solid var(--nm-border); }
+.player-rating-actions button { justify-content: center; min-height: 44px; padding: 8px; border: 0; }
+.player-action-panel.actions .player-rating-actions button { border: 0; }
+
+.sleep-timer-options { border-block: 1px solid var(--border-subtle, #ffffff20); padding-block: 6px; }
+.sleep-timer-hint { font-size: 12px; padding: 0 12px; opacity: .75; }
+
+:root { --nm-motion-fast: 160ms; --nm-motion-content: 220ms; --nm-motion-sheet: 320ms; --nm-motion-ease: cubic-bezier(.2,.8,.2,1); }
+.player-actions-scrim { transition: opacity var(--nm-motion-sheet) var(--nm-motion-ease); }
+.player-actions-scrim.is-exiting { opacity: 0; pointer-events: none; }
+.player-action-panel.is-dragging { transition: none; }
+.player-action-content { animation: action-content-enter var(--nm-motion-content) var(--nm-motion-ease); }
+.player-drawer-handle { -webkit-tap-highlight-color: transparent; }
+.player-drawer-handle:focus:not(:focus-visible) { outline: none; }
+.player-drawer-handle:focus-visible { outline: 2px solid var(--nm-primary, #78b7ff); outline-offset: -6px; border-radius: 12px; }
+@keyframes action-content-enter { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+ .player-action-content { animation: none; }
+ .player-actions-scrim, .player-action-panel.opens-drawer { transition: none; }
+}
+/* Content owns its natural height; grid auto rows would stretch a short submenu. */
+.player-action-panel.opens-drawer { display: block; }
+.track-artwork { position: relative; display: block; overflow: hidden; aspect-ratio: 1; isolation: isolate; background: var(--nm-surface, #101419); }
+.track-artwork .track-artwork-placeholder { position: absolute; inset: 0; display: grid; place-items: center; color: var(--nm-muted-foreground); }
+.track-artwork img { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: inherit; object-fit: cover; box-shadow: none; }
+.track-artwork .track-artwork-current { opacity: 0; transition: opacity var(--nm-motion-content, 220ms) var(--nm-motion-ease, ease-out); }
+.track-artwork .track-artwork-current.is-ready { opacity: 1; }
+.track-artwork .track-artwork-previous { animation: track-artwork-out var(--nm-motion-content, 220ms) ease-out forwards; }
+.mini-player .track-artwork { width: 48px; border-radius: 13px; }
+.phone-frame.mini-player-compact .mini-player .track-artwork { width: 40px; border-radius: 12px; }
+.mini-player .track-artwork img { width: 100%; }
+.mini-track-copy { display: grid; min-width: 0; gap: 3px; }
+.track-copy-motion { animation: track-copy-in var(--nm-motion-content, 220ms) var(--nm-motion-ease, ease-out); }
+@keyframes track-artwork-out { to { opacity: 0; } }
+@keyframes track-copy-in { from { opacity: .35; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+ .track-artwork .track-artwork-current { transition: none; }
+ .track-artwork .track-artwork-previous { display: none; }
+ .track-copy-motion { animation: none; }
+}
+
+.player-view-tabs { position:relative;display:inline-flex;isolation:isolate;flex-shrink:0;border-radius:24px; }
+.player-view-tabs::before { content:'';position:absolute;inset:0 auto 0 0;width:50%;border-radius:24px;background:color-mix(in srgb,var(--nm-foreground) 18%,transparent);transition:transform var(--nm-motion-content) var(--nm-motion-ease),opacity var(--nm-motion-fast) ease;z-index:-1; }
+.player-view-tabs[data-active="queue"]::before { transform:translateX(100%); }
+.player-view-tabs[data-active="none"]::before { opacity:0; }
+.player-view-tabs button { display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:88px;min-height:44px;padding:8px 12px;border:0;border-radius:24px;background:transparent; }
+.player-view-tabs button.active { background:transparent; }
+.queue-overlay, .lyrics-overlay { animation:inspector-content-in var(--nm-motion-content) var(--nm-motion-ease); }
+@keyframes inspector-content-in { from { opacity:.4;transform:translateY(6px); } to {opacity:1;transform:none;} }
+@media(prefers-reduced-motion:reduce){.player-view-tabs::before{transition:none;}.queue-overlay,.lyrics-overlay{animation:none;}}
+
+.player-panel .player-inspector-tabs:not(.player-inspector-switch) { visibility:hidden; }
+.player-inspector-tabs.player-inspector-switch { position:absolute;top:var(--nm-inspector-top, 24px);left:var(--nm-inspector-left, 18px);z-index:9; }
+.player-inspector-switch::after { content:'';position:absolute;bottom:0;left:0;width:50%;height:2px;background:var(--nm-accent);transition:transform var(--nm-motion-content) var(--nm-motion-ease); }
+.player-inspector-switch[data-panel="lyrics"]::after { transform:translateX(100%); }
+.player-inspector-switch button { min-width:84px; }
+.player-inspector-switch button[aria-selected="true"] { border-bottom-color:transparent; }
+@media(prefers-reduced-motion:reduce){.player-inspector-switch::after{transition:none;}}
+
+.player-inspector-host { position:absolute;inset:0;z-index:8; }
+
+/* Shared tabs sit over the reserved header row. Use the same safe-area origin
+   for both layers so tabs cannot drift into system chrome or the status copy. */
+@media (max-width: 899px), (max-height: 620px) {
+  .player-inspector-host {
+    --nm-inspector-top: max(24px, env(safe-area-inset-top));
+    --nm-inspector-left: max(clamp(18px, 4vw, 36px), env(safe-area-inset-left));
+    --nm-inspector-right: max(clamp(18px, 4vw, 36px), env(safe-area-inset-right));
+  }
+  .player-sheet .player-inspector-host .queue-overlay,
+  .player-sheet .player-inspector-host .lyrics-overlay {
+    padding-top: var(--nm-inspector-top);
+    padding-left: var(--nm-inspector-left);
+    padding-right: var(--nm-inspector-right);
+  }
+}
+
+/* The shared inspector wrapper owns the desktop grid cell; its panels and
+   persistent tabs then share that cell's origin instead of covering the player. */
+@media (min-width: 900px) and (min-height: 621px) {
+  .player-sheet .player-panel .player-inspector-host {
+    position: relative;
+    inset: auto;
+    grid-column: 2;
+    grid-row: 1;
+    min-width: 0;
+    min-height: 0;
+    --nm-inspector-top: 0px;
+    --nm-inspector-left: 24px;
+  }
+  .player-sheet .player-panel .player-inspector-host .queue-overlay,
+  .player-sheet .player-panel .player-inspector-host .lyrics-overlay {
+    position: absolute;
+    inset: 0;
+  }
+}

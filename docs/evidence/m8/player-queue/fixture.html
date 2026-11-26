@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NaviMuse M8 player and queue visual fixture</title>
+    <link rel="stylesheet" href="../../../../src/styles.css" />
+    <style>
+      body { margin: 0; }
+      .fixture-art { background: radial-gradient(circle at 52% 35%, #f45132 0 18%, transparent 19%), radial-gradient(circle at 50% 38%, #783024 0 38%, transparent 39%), linear-gradient(150deg, #241415, #090c11 62%, #18333a); }
+      .fixture-thumb { background: linear-gradient(135deg, #a54535, #172b34); }
+    </style>
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="phone-frame has-mini-player">
+        <div class="native-desktop-shell has-player">
+          <aside class="desktop-rail"><header class="desktop-brand"><span class="desktop-brand-mark">N</span><span class="desktop-brand-copy"><h1>NaviMuse</h1><small>Your signal</small></span></header><nav class="tabbar"><button class="active">⌂<span>Home</span></button><button>▦<span>Library</span></button><button>⌕<span>Search</span></button><button>⌁<span>Sonic</span></button><button>⚙<span>Settings</span></button></nav></aside>
+          <section class="desktop-surface"></section>
+          <footer class="desktop-player-zone"><div class="mini-player"><button class="mini-hit"><span class="artwork-fallback fixture-art"></span><div class="mini-copy"><strong>Midnight Signal</strong><span>Luna Harbor</span><span class="transport-state transport-state-restored" role="status"><i></i>Restored at 2:18. Play to continue.</span></div></button><div class="mini-transport"><button>◀</button><button class="mini-pause">▶</button><button>▶</button></div><div class="mini-tools"><span class="mini-time">2:18 / 4:49</span><button class="progress-rail"><span style="width:48%"></span></button><div class="mini-secondary-controls"><button>♥</button></div><label class="mini-volume"><span>◖</span><input type="range" value="70" /></label><button class="mini-queue">☷</button></div></div></footer>
+        </div>
+        <div class="player-sheet open">
+          <section class="player-panel" style="transform:none">
+            <button class="grabber"></button>
+            <div class="player-topline"><div class="player-topline-tools"><button>☷</button><button>▤</button></div><p>Now Playing <span>NaviMuse</span></p><button>⌄</button></div>
+            <div class="art-stage"><span class="cover-art artwork-fallback fixture-art"></span></div>
+            <div class="track-copy"><h1>Midnight Signal</h1><p class="artist">Luna Harbor</p><p>Signals After Dark</p><p class="player-transport-state transport-state-restored"><i></i>Restored at 2:18. Play to continue.</p></div>
+            <div class="wave-row has-waveform"><span>2:18</span><div class="waveform" aria-hidden="true"></div><span>-2:31</span></div>
+            <div class="quality-row"><span>FLAC</span><span>24-bit / 96 kHz</span><span>Navidrome</span></div>
+            <div class="rating-row"><button>♥</button><div><button class="rating-star active">★</button><button class="rating-star active">★</button><button class="rating-star active">★</button><button class="rating-star active">★</button><button class="rating-star">★</button></div><div class="player-actions-anchor"><button>•••</button></div></div>
+            <div class="transport"><button>⌘</button><button>◀</button><button class="play-button">▶</button><button>▶</button><button>↻</button></div>
+            <div class="sonic-strip"><span>Warm</span><span>112 BPM</span><span>F minor</span></div>
+          </section>
+        </div>
+      </section>
+    </main>
+    <script>
+      const params = new URLSearchParams(location.search);
+      const queueMode = params.get('view') === 'queue';
+      const lyricsMode = params.get('view') === 'lyrics';
+      const requestedState = params.get('state');
+      const stateCopy = {
+        loading: 'Loading Midnight Signal…',
+        buffering: 'Buffering…',
+        recovering: 'Reconnecting playback…',
+        error: 'This track could not be loaded. Check your connection and try again.'
+      };
+      if (stateCopy[requestedState]) {
+        document.querySelectorAll('.transport-state, .player-transport-state').forEach((element) => {
+          element.className = element.className.replace('transport-state-restored', `transport-state-${requestedState}`);
+          element.lastChild.textContent = stateCopy[requestedState];
+        });
+      }
+      if (queueMode) {
+        const panel = document.querySelector('.player-panel');
+        panel.classList.add('queue-open');
+        const tracks = ['Red Horizon', 'Paper Lanterns', 'Midnight Signal', 'Hollow Hotel', 'Tide Without Shore', 'Glass Coast', 'Slow Bloom', 'Signal Drift'];
+        const rows = tracks.map((title, index) => {
+          const current = index === 2;
+          const section = index === 2 ? '<li class="queue-section-label"><span>Playing</span></li>' : index === 3 ? '<li class="queue-section-label"><span>Up Next</span></li>' : '';
+          const explicitlyAdded = index === 3;
+          const generatedBoundary = index === 6 ? '<li class="queue-generated-boundary"><span>Generated continuation · 2 tracks</span><button>Remove</button></li>' : '';
+          const actions = index > 2 ? '<div class="queue-row-actions"><button>↑</button><button>↓</button><button>×</button></div>' : '';
+          return `${section}${generatedBoundary}<li class="queue-row ${current ? 'current' : ''}"><button class="${current ? 'current' : ''}" ${current ? 'disabled aria-current="true"' : ''}><span class="queue-position">${current ? '◖' : index + 1}</span><span class="queue-track-copy"><strong>${title}</strong><span>${index % 2 ? 'Vale Meridian' : 'Luna Harbor'} · Midnight Signal</span></span>${current ? '<span class="queue-current-label">Now Playing</span>' : explicitlyAdded ? '<span class="queue-provenance-label">Added</span>' : ''}</button>${actions}</li>`;
+        }).join('');
+        const pauseArmed = params.get('pause') === '1';
+        panel.insertAdjacentHTML('beforeend', `<div class="queue-overlay" role="dialog" aria-modal="true"><header class="queue-overlay-header"><div><p>Playing from <strong>Signals After Dark</strong></p><h2>Queue</h2><span>Luna Harbor · 8 tracks</span></div><div class="queue-header-actions"><button class="${pauseArmed ? 'active' : ''}" aria-pressed="${pauseArmed}" aria-label="${pauseArmed ? 'Cancel pause after current track' : 'Pause after current track'}">Ⅱ<span>${pauseArmed ? 'Cancel pause' : 'Pause after'}</span></button><button><span>Undo</span></button><button><span>Clear</span></button><button>×</button></div></header><div class="queue-overlay-transport"></div><ol class="queue-overlay-list"><li class="queue-section-label"><span>Played</span></li><li class="queue-overlay-history-toggle"><button>Hide 2 played tracks</button><button>Clear played</button></li>${rows}</ol></div>`);
+      }
+      if (lyricsMode) {
+        const panel = document.querySelector('.player-panel');
+        panel.classList.add('panel-open', 'lyrics-open');
+        const lines = [
+          'Static on the shoreline',
+          'A signal through the blue',
+          'Every quiet frequency',
+          'Keeps pulling me to you',
+          'Midnight folds around us',
+          'The distance turns to light',
+          'If you can hear this heartbeat',
+          'Follow it tonight'
+        ];
+        panel.insertAdjacentHTML('beforeend', `<div class="lyrics-overlay" role="dialog" aria-modal="true"><header class="lyrics-overlay-header"><div><div class="player-inspector-tabs" role="tablist" aria-label="Player details"><button role="tab" aria-selected="false">☷ Queue</button><button role="tab" aria-selected="true">▤ Lyrics</button></div><h2 class="sr-only">Lyrics</h2><p class="synced">Synchronized</p></div><div class="lyrics-header-actions"><button class="active" aria-pressed="true">Stop following</button><button aria-label="Close lyrics">×</button></div></header><div class="lyrics-scroll"><div class="lyrics-lines synced">${lines.map((line, index) => `<button ${index === 3 ? 'class="current" aria-current="true"' : ''}>${line}</button>`).join('')}</div></div></div>`);
+      }
+    </script>
+  </body>
+</html>

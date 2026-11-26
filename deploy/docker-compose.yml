@@ -1,0 +1,51 @@
+services:
+  navimuse:
+    build:
+      context: ${NAVIMUSE_BUILD_CONTEXT:-.}
+    container_name: navimuse
+    restart: unless-stopped
+    environment:
+      PORT: "8099"
+      NAVIMUSE_DATA_DIR: /data
+      NAVIMUSE_SETUP_TOKEN: ${NAVIMUSE_SETUP_TOKEN:-}
+      NAVIDROME_URL: http://navidrome:4533
+      NAVIDROME_USERNAME: ${NAVIDROME_USERNAME:-}
+      NAVIDROME_PASSWORD: ${NAVIDROME_PASSWORD:-}
+      PUBLIC_NAVIDROME_URL: ${PUBLIC_NAVIDROME_URL:-http://navidrome:4533}
+      AUDIOMUSE_URL: http://audiomuse-ai-flask-app:8000
+      PUBLIC_AUDIOMUSE_URL: ${PUBLIC_AUDIOMUSE_URL:-http://audiomuse-ai-flask-app:8000}
+      AUDIOMUSE_API_TOKEN: ${AUDIOMUSE_API_TOKEN:-}
+      AUDIOMUSE_API_TOKEN_FILE: ${AUDIOMUSE_API_TOKEN_FILE:-/run/secrets/audiomuse_api_token}
+      NAVIMUSE_ALLOWED_NAVIDROME_HOSTS: ${NAVIMUSE_ALLOWED_NAVIDROME_HOSTS:-}
+      NAVIMUSE_ALLOWED_AUDIOMUSE_HOSTS: ${NAVIMUSE_ALLOWED_AUDIOMUSE_HOSTS:-}
+      NAVIMUSE_OIDC_ISSUER: ${NAVIMUSE_OIDC_ISSUER:-}
+      NAVIMUSE_OIDC_CLIENT_ID: ${NAVIMUSE_OIDC_CLIENT_ID:-}
+      NAVIMUSE_OIDC_CLIENT_SECRET_FILE: ${NAVIMUSE_OIDC_CLIENT_SECRET_FILE:-/run/secrets/navimuse_oidc_client_secret}
+      NAVIMUSE_OIDC_REDIRECT_URI: ${NAVIMUSE_OIDC_REDIRECT_URI:-}
+      TRUST_PROXY: ${TRUST_PROXY:-false}
+    volumes:
+      - navimuse_data:/data
+    ports:
+      - "8099:8099"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8099/api/health').then(r => { if (!r.ok) process.exit(1) }).catch(() => process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    networks:
+      - music_services
+    secrets:
+      - navimuse_oidc_client_secret
+
+networks:
+  music_services:
+    name: music_services
+    external: true
+
+volumes:
+  navimuse_data:
+
+secrets:
+  navimuse_oidc_client_secret:
+    file: ${NAVIMUSE_OIDC_CLIENT_SECRET_HOST_FILE:-./secrets/navimuse_oidc_client_secret}

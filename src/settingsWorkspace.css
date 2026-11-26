@@ -1,0 +1,96 @@
+/* Settings follows the approved Library density and keeps save state explicit. */
+.settings-surface { padding: 0 24px var(--nm-surface-bottom-clearance); }
+.settings-page-heading { min-height: 72px; display: flex; align-items: center; border-bottom: 1px solid var(--nm-border); }
+.settings-page-heading h1 { margin: 0; font-size: 26px; font-weight: 500; letter-spacing: -.03em; }
+.settings-surface .settings-workspace { margin-top: 0; }
+.settings-surface .settings-section-nav button { font-weight: 450; }
+.settings-surface .settings-workspace-heading { align-items: center; flex-wrap: wrap; }
+.settings-surface .settings-workspace-heading h2 { font-weight: 500; }
+.settings-surface .settings-workspace-heading p { letter-spacing: normal; text-transform: none; font-weight: 400; font-size: 12px; }
+.settings-draft-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.settings-draft-actions button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 44px; padding: 8px 12px; border: 1px solid var(--nm-border); border-radius: 4px; background: transparent; color: var(--nm-foreground); font-size: 13px; }
+.settings-draft-actions button:disabled { opacity: .5; cursor: default; }
+.settings-draft-status { margin: 10px 0; color: var(--nm-muted-foreground); font-size: 12px; line-height: 1.5; }
+.settings-preference-fields { min-width: 0; padding: 0; margin: 0; border: 0; }
+.settings-surface .settings-panel h2 { font-weight: 500; }
+.settings-surface .settings-panel p { font-weight: 400; }
+.settings-surface .settings-field > span,
+.settings-surface .settings-row > span { font-weight: 450; }
+.settings-surface .settings-field input,
+.settings-surface .settings-field select { min-height: 44px; }
+.settings-surface button:focus-visible,
+.settings-surface input:focus-visible,
+.settings-surface select:focus-visible { outline: 2px solid var(--nm-accent); outline-offset: 3px; }
+.native-desktop-shell:has(.settings-surface),
+.phone-frame:has(.settings-surface) { background: var(--nm-background); }
+.phone-frame:has(.settings-surface)::before { background: none; }
+@media (min-width: 900px) {
+  .native-desktop-shell:has(.settings-surface) .desktop-brand-mark { background: none; border: 0; width: 28px; }
+  .native-desktop-shell:has(.settings-surface) .desktop-brand-copy h1 { font-size: 18px; font-weight: 450; }
+  .native-desktop-shell:has(.settings-surface) .desktop-brand-copy small { display: none; }
+  .native-desktop-shell:has(.settings-surface) .primary-nav-button { font-weight: 400; }
+}
+@media (max-width: 599px) {
+  .settings-surface { padding-inline: 18px; }
+  .settings-surface .settings-workspace-heading { gap: 12px; }
+  .settings-surface .settings-draft-actions { width: 100%; }
+  .settings-surface .settings-field { grid-template-columns: minmax(0, 1fr); gap: 6px; padding-block: 12px; }
+  .settings-surface .settings-field select,
+  .settings-surface .settings-field input { width: 100%; text-align: left; }
+}
+
+.owner-accounts-heading { display: flex; justify-content: space-between; align-items: start; gap: 20px; }
+.owner-accounts-heading h3 { margin: 0; font-size: 18px; font-weight: 500; }
+.owner-accounts-heading p, .owner-account-list p { color: var(--nm-muted-foreground); margin: 6px 0 0; }
+.owner-account-list { list-style: none; margin: 20px 0; padding: 0; }
+.owner-account-list li { display: flex; justify-content: space-between; gap: 24px; padding: 18px 0; border-bottom: 1px solid var(--nm-border); }
+.owner-account-list li > div { min-width: 0; overflow-wrap: anywhere; }
+.owner-account-list strong { font-weight: 500; }
+.owner-account-state { display: grid; align-content: center; gap: 5px; text-align: right; font-size: 13px; color: var(--nm-muted-foreground); }
+@media (max-width: 599px) {
+ .owner-accounts-heading { flex-wrap: wrap; }
+ .owner-account-list li { flex-direction: column; gap: 10px; }
+ .owner-account-state { text-align: left; }
+}
+
+.owner-accounts button { min-height: 44px; padding: 8px 12px; border: 1px solid var(--nm-border); border-radius: 4px; background: transparent; color: var(--nm-foreground); }
+.owner-accounts button:disabled { opacity: .5; cursor: default; }
+
+.owner-connection-editor { max-width: 760px; }
+.owner-connection-editor .settings-field { margin-block: 24px 12px; }
+.owner-connection-editor select { max-width: 100%; }
+.owner-connection-editor [role="group"] { border-top: 1px solid var(--nm-border); margin-top: 20px; padding-top: 12px; }
+.owner-connection-editor [role="group"] button + button { margin-left: 8px; }
+
+.owner-recovery .recovery-code { width: 100%; min-width: 0; font-family: monospace; }
+
+.owner-access-editor { line-height: 1.5; }
+.owner-access-editor header p { color: var(--nm-muted-foreground); overflow-wrap: anywhere; }
+.owner-access-editor > button, .owner-access-editor form > button { margin: 8px 8px 8px 0; }
+.owner-access-editor h3:focus { outline: none; }
+.owner-access-editor .account-access-remember { margin-block: 16px; }
+
+/* A sticky final row keeps draft actions reachable within the Settings scroller.
+   The scroller's bottom padding already reserves navigation/mini-player space. */
+.settings-save-dock {
+  position: sticky;
+  bottom: 12px;
+  z-index: 3;
+  width: fit-content;
+  max-width: 100%;
+  margin: 20px auto 0;
+  padding: 8px;
+  border: 1px solid var(--nm-border);
+  border-radius: 24px;
+  background: var(--nm-background);
+  box-shadow: 0 8px 28px #0006;
+}
+.settings-save-dock .settings-draft-actions { width: auto; justify-content: center; }
+.settings-save-dock button { border-radius: 18px; }
+.settings-save-dock button:last-child { background: var(--nm-accent); color: var(--nm-accent-foreground); border-color: transparent; }
+.settings-save-dock .settings-warning { max-width: 36ch; margin: 4px 8px 10px; }
+@media (min-width: 600px) {
+  /* These panes already end above the transport. The dock's own final row
+     replaces their reserved bottom padding while a draft is present. */
+  .settings-surface:has(.settings-save-dock) { padding-bottom: 0; }
+}

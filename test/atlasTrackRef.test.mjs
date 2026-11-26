@@ -1,0 +1,3 @@
+import test from 'node:test';import assert from 'node:assert/strict';import { createAtlasTrackRef, parseAtlasTrackRef } from '../server/atlasTrackRef.js';
+const key=Buffer.alloc(32,4),digest='sha256:'+'a'.repeat(64);
+test('Atlas track references round trip privately and reject tampering/wrong keys',()=>{const value=createAtlasTrackRef({rawId:'private-song',projectionDigest:digest},key);assert.equal(value.includes('private-song'),false);assert.deepEqual(parseAtlasTrackRef(value,key),{rawId:'private-song',projectionDigest:digest});assert.equal(parseAtlasTrackRef(`${value}x`,key),null);assert.equal(parseAtlasTrackRef(value,Buffer.alloc(32,5)),null)});

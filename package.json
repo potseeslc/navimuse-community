@@ -1,0 +1,47 @@
+{
+  "name": "navimuse",
+  "version": "0.2.0-preview.1",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.23.2"
+  },
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "vite build && node scripts/build-ios-offline-shell.mjs",
+    "preview": "vite preview --host 0.0.0.0",
+    "start": "node server.mjs",
+    "tauri": "tauri",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build --target aarch64-apple-darwin",
+    "native:macos:evidence": "node scripts/native-macos-evidence.mjs",
+    "native:macos:seal-app": "node scripts/native-macos-seal-app.mjs",
+    "native:macos:diagnostics": "node scripts/native-macos-diagnostics.mjs",
+    "native:macos:m7-evidence": "node scripts/native-macos-m7-evidence.mjs",
+    "native:macos:session-evidence": "node scripts/native-macos-session-evidence.mjs",
+    "evidence:playback:fixtures": "node scripts/audio-transition-fixtures.mjs --output .scratch/m8-playback-fixtures",
+    "evidence:playback:serve": "node scripts/audio-evidence-fixture-server.mjs",
+    "test": "NODE_ENV=test node --test",
+    "tauri:ios:init": "tauri ios init",
+    "tauri:ios:build": "node scripts/build-ios-candidate.mjs"
+  },
+  "dependencies": {
+    "@simplewebauthn/browser": "14.0.0",
+    "@simplewebauthn/server": "14.0.1",
+    "@tauri-apps/api": "^2.11.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "argon2": "0.45.1",
+    "lucide-react": "^0.468.0",
+    "openid-client": "^6.8.5",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "regl": "2.1.0",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.7"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.11.4",
+    "happy-dom": "^20.11.2"
+  },
+  "license": "MIT"
+}

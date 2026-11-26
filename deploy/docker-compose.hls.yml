@@ -1,0 +1,43 @@
+# Optional overlay; enable only for an explicit pilot allowlist. No host worker port.
+services:
+  navimuse:
+    environment:
+      NAVIMUSE_HLS_ENABLED: ${NAVIMUSE_HLS_ENABLED:-false}
+      NAVIMUSE_HLS_ALLOW_SCOPES: ${NAVIMUSE_HLS_ALLOW_SCOPES:-[]}
+      NAVIMUSE_HLS_WORKER_URL: http://hls-worker:8100
+      NAVIMUSE_HLS_WORKER_TOKEN_FILE: /run/secrets/navimuse_hls_worker_token
+    secrets:
+      - navimuse_hls_worker_token
+    networks:
+      - hls_internal
+  hls-worker:
+    profiles: [hls]
+    build:
+      context: ${NAVIMUSE_BUILD_CONTEXT:-.}
+      dockerfile: deploy/hls/Dockerfile
+    restart: unless-stopped
+    read_only: true
+    cpus: 2
+    mem_limit: 768m
+    pids_limit: 128
+    environment:
+      HLS_WORKER_TOKEN_FILE: /run/secrets/navimuse_hls_worker_token
+      HLS_MAX_JOBS: ${HLS_MAX_JOBS:-2}
+      HLS_CACHE_BYTES: ${HLS_CACHE_BYTES:-2147483648}
+    tmpfs: [/tmp:size=32m]
+    volumes: [navimuse_hls_cache:/cache]
+    networks: [hls_internal]
+    secrets: [navimuse_hls_worker_token]
+    healthcheck:
+      test: [CMD, node, -e, "const fs=require('fs');fetch('http://127.0.0.1:8100/health',{headers:{authorization:'Bearer '+fs.readFileSync(process.env.HLS_WORKER_TOKEN_FILE,'utf8').trim()}}).then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+networks:
+  hls_internal:
+    internal: true
+volumes:
+  navimuse_hls_cache:
+secrets:
+  navimuse_hls_worker_token:
+    file: ${NAVIMUSE_HLS_WORKER_TOKEN_HOST_FILE:-./secrets/navimuse_hls_worker_token}

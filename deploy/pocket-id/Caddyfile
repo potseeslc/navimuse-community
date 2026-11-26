@@ -1,0 +1,20 @@
+{
+    admin off
+    auto_https off
+    servers {
+        trusted_proxies static 172.21.0.0/16
+    }
+}
+:1411 {
+    @association path /.well-known/apple-app-site-association /apple-app-site-association
+    handle @association {
+        header Content-Type application/json
+        header Cache-Control "public, max-age=300"
+        respond `{"webcredentials":{"apps":["ABCDE12345.com.developer.navimuse"]}}` 200
+    }
+    handle {
+        reverse_proxy pocket-id-backend:1411 {
+            header_up X-Forwarded-Proto https
+        }
+    }
+}

@@ -1,0 +1,23 @@
+[package]
+name = "navimuse"
+version = "0.2.0-preview.1"
+description = "NaviMuse macOS shell"
+authors = ["Colter Wilson"]
+license = "MIT"
+edition = "2021"
+rust-version = "1.88"
+
+[lib]
+name = "navimuse_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+cc = "1.4.4"
+tauri-build = { version = "2.6.3", features = [] }
+
+[dependencies]
+tauri = { version = "2.11.5", features = [] }
+
+[patch.crates-io]
+swift-rs = { path = "vendor/swift-rs" }
+tao = { path = "vendor/tao" }

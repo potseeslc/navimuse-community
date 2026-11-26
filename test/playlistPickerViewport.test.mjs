@@ -1,0 +1,40 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {Window} from 'happy-dom';
+import {createServer} from 'vite';
+test('playlist picker follows keyboard viewport and keeps create/select and focus behavior',async()=>{
+ const w=new Window({url:'http://localhost/'});
+ for(const key of ['window','document','Node','Element','HTMLElement','CustomEvent'])globalThis[key]=key==='window'?w:w[key];
+ const viewport=new w.EventTarget();Object.assign(viewport,{offsetTop:0,offsetLeft:0,width:402,height:874});Object.defineProperty(w,'visualViewport',{value:viewport});
+ const vite=await createServer({server:{middlewareMode:true,hmr:false},appType:'custom',optimizeDeps:{noDiscovery:true}});
+ const React=await import('react');const {createRoot}=await import('react-dom/client');const {flushSync}=await import('react-dom');const {PlaylistPicker}=await vite.ssrLoadModule('/src/playerChrome.jsx');
+ const host=document.createElement('div');document.body.append(host);const root=createRoot(host);
+ let added=null,created=null,closed=0;
+ const props={open:true,playlists:[{id:'1',name:'First',songCount:3}],onAdd:p=>added=p.id,onCreate:n=>created=n,onClose:()=>closed++};
+ try{
+  flushSync(()=>root.render(React.createElement(PlaylistPicker,props)));
+  const dialog=document.querySelector('[role=dialog]'),layer=dialog.parentElement;
+  assert.equal(layer.parentElement,document.body,'portal escapes player transforms');
+  assert.equal(document.activeElement,dialog.querySelector('h2'),'opening does not focus the keyboard input');
+  assert.equal(layer.style.height,'874px');
+  Object.assign(viewport,{height:420,offsetTop:30});viewport.dispatchEvent(new w.Event('resize'));
+  assert.equal(layer.style.height,'420px');assert.equal(layer.style.top,'30px');
+  Object.assign(viewport,{offsetTop:44});viewport.dispatchEvent(new w.Event('scroll'));assert.equal(layer.style.top,'44px');
+  document.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Tab',shiftKey:true,bubbles:true,cancelable:true}));
+  assert.equal(document.activeElement,dialog.querySelector('.playlist-picker-list button'));
+  document.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Tab',bubbles:true,cancelable:true}));
+  assert.equal(document.activeElement,dialog.querySelector('header button'),'last control wraps to first');
+  document.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Tab',shiftKey:true,bubbles:true,cancelable:true}));
+  assert.equal(document.activeElement,dialog.querySelector('.playlist-picker-list button'),'first control wraps to last');
+  flushSync(()=>document.activeElement.click());assert.equal(added,'1');
+  const input=dialog.querySelector('input');input.focus();
+  Object.getOwnPropertyDescriptor(w.HTMLInputElement.prototype,'value').set.call(input,'Evening');
+  flushSync(()=>input.dispatchEvent(new w.Event('input',{bubbles:true})));
+  flushSync(()=>dialog.querySelector('form').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true})));
+  assert.equal(created,'Evening');
+  document.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Escape',bubbles:true,cancelable:true}));assert.equal(closed,1);
+  flushSync(()=>root.render(React.createElement(PlaylistPicker,{...props,open:false})));
+  const previous=layer.style.height;viewport.height=874;viewport.dispatchEvent(new w.Event('resize'));assert.equal(layer.style.height,previous,'closed picker removes viewport listeners');
+  flushSync(()=>root.render(React.createElement(PlaylistPicker,props)));assert.equal(document.querySelector('input').value,'');
+ }finally{flushSync(()=>root.unmount());await vite.close();w.happyDOM.abort();}
+});

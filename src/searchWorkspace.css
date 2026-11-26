@@ -1,0 +1,49 @@
+/* Search follows the approved Library's artwork, typography and action density. */
+.search-workspace, .search-artist-detail { padding: 0 24px var(--nm-surface-bottom-clearance); }
+.search-workspace .screen-header { min-height: 72px; margin: 0 0 18px; padding: 0; align-items: center; }
+.search-workspace .screen-header h1, .search-artist-detail h1 { font-size: 26px; font-weight: 500; letter-spacing: -.035em; }
+.search-workspace .screen-header p { font-weight: 400; font-size: 12px; text-transform: none; letter-spacing: normal; }
+.search-workspace .search-box { min-height: 48px; margin: 0 0 24px; padding: 0 14px; border: 1px solid var(--nm-border); border-radius: 6px; background: var(--nm-surface); }
+.search-workspace .search-box input { min-width: 0; font-size: 16px; font-weight: 400; }
+.search-workspace .section-header { margin: 0 0 14px; padding: 0; border: 0; }
+.search-workspace .section-header h2, .search-workspace .search-result-group > h3 { font-size: 17px; font-weight: 450; letter-spacing: -.02em; text-transform: none; }
+.search-workspace .section-header > svg { display: none; }
+.search-workspace .quick-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 24px; }
+.search-workspace .quick-grid button { min-height: 44px; padding: 0 16px; font-size: 13px; font-weight: 400; border: 1px solid var(--nm-border); border-radius: 6px; background: var(--nm-surface); }
+.search-workspace .search-result-groups { display: grid; grid-template-columns: minmax(0,1fr); gap: 26px; }
+.search-workspace .result-list h3 { font-size: 14px; font-weight: 450; }
+.search-workspace .result-list p { font-size: 12px; font-weight: 400; }
+.search-workspace .result-list .small-cover { width: 44px; height: 44px; border-radius: 4px; }
+.search-workspace [aria-labelledby="search-artists-title"] .result-list { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 12px; }
+.search-workspace [aria-labelledby="search-albums-title"] .result-list { display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); gap: 18px; }
+.search-workspace [aria-labelledby="search-albums-title"] .result-list > button { display: flex; flex-direction: column; align-items: stretch; gap: 10px; min-width: 0; padding: 2px; border: 0; background: transparent; }
+.search-workspace [aria-labelledby="search-albums-title"] .small-cover { width: 100%; height: auto; aspect-ratio: 1; }
+.search-workspace .search-status, .search-workspace .empty-state, .search-workspace .search-error { font-size: 14px; color: var(--nm-muted-foreground); }
+.search-workspace .search-error button { min-height: 44px; padding: 8px 14px; border: 1px solid var(--nm-border); border-radius: 5px; }
+.search-workspace .result-list button:focus-visible { outline: 2px solid var(--nm-focus); outline-offset: 3px; }
+.search-artist-detail .library-collection.grid { grid-template-columns: repeat(5,minmax(0,1fr)); }
+@media (max-width: 899px) {
+  .search-workspace [aria-labelledby="search-artists-title"] .result-list { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .search-workspace [aria-labelledby="search-albums-title"] .result-list, .search-artist-detail .library-collection.grid { grid-template-columns: repeat(3,minmax(0,1fr)); }
+}
+@media (max-width: 599px) {
+  /* The inner surface owns scrolling; focus must not scroll the overlay frame. */
+  .phone-frame:has([data-active-surface="search"]) { overflow: clip; }
+  .search-workspace, .search-artist-detail { padding-inline: 18px; }
+  .search-workspace .screen-header { min-height: 64px; }
+  .search-workspace [aria-labelledby="search-artists-title"] .result-list { grid-template-columns: minmax(0,1fr); }
+  .search-workspace [aria-labelledby="search-albums-title"] .result-list, .search-artist-detail .library-collection.grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+}
+
+.native-desktop-shell[data-active-surface="search"] { background: var(--nm-background); }
+@media (min-width: 600px) {
+  .native-desktop-shell[data-active-surface="search"] .desktop-brand-mark { background: none; border: 0; width: 28px; }
+  .native-desktop-shell[data-active-surface="search"] .desktop-brand-copy h1 { font-size: 18px; font-weight: 450; }
+  .native-desktop-shell[data-active-surface="search"] .desktop-brand-copy small { display: none; }
+  .native-desktop-shell[data-active-surface="search"] .primary-nav-button { font-weight: 400; }
+}
+
+.search-artist-detail { padding-top: 18px; }
+.search-workspace .empty-state { font-weight: 400; }
+.phone-frame:has([data-active-surface="search"]) { background: var(--nm-background); }
+.phone-frame:has([data-active-surface="search"])::before { background: none; }

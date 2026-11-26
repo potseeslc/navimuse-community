@@ -1,0 +1,16 @@
+/* Touch scrolling stays with WebKit: preserve velocity and diagonal axis locking.
+   Snapping album-sized cards can cut a quick flick short; mouse dragging is separate. */
+@media (any-pointer: coarse) {
+  .home-surface .shelf-row,
+  .home-surface .mix-grid.artist-radio-row,
+  .home-surface .radio-home-shelf,
+  .home-surface .made-for-you-row,
+  .library-workspace .library-collection.strip,
+  .lb-home-section .lb-release-groups ol,
+  .lb-dashboard .lb-album-ranking {
+    scroll-snap-type:none;
+    touch-action:pan-x pan-y;
+    -webkit-overflow-scrolling:touch;
+  }
+}
+.home-surface, .screen-surface { -webkit-overflow-scrolling:touch; }

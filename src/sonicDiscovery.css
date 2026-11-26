@@ -1,0 +1,70 @@
+/* Discovery uses the accepted Library hierarchy; each entry performs a real action. */
+.sonic-discovery-surface { padding: 0 24px var(--nm-surface-bottom-clearance); }
+.sonic-discovery-heading { padding: 22px 0 18px; border-bottom: 1px solid var(--nm-border); margin-bottom: 20px; }
+.sonic-discovery-heading h1 { margin: 0; font-size: 26px; font-weight: 500; letter-spacing: -.03em; }
+.sonic-discovery-heading p { margin: 8px 0 0; font-size: 13px; color: var(--nm-muted-foreground); }
+.sonic-discovery-surface .section-header h2 { font-size: 15px; font-weight: 500; text-transform: none; }
+.sonic-discovery-surface .smart-grid,
+.sonic-discovery-surface .radio-grid { gap: 10px; margin-bottom: 24px; }
+.sonic-discovery-surface .smart-grid button,
+.sonic-discovery-surface .radio-grid button { min-height: 52px; border-radius: 4px; background: transparent; backdrop-filter: none; font-weight: 450; }
+.sonic-discovery-surface .atlas-journey-planner,
+.sonic-discovery-surface .lyrics-discovery,
+.sonic-discovery-surface .discovery-results,
+.sonic-discovery-surface .audiomuse-status-card { border-radius: 4px; box-shadow: none; backdrop-filter: none; background: transparent; }
+.sonic-discovery-surface .discovery-results { margin-top: 18px; padding: 18px; }
+.sonic-discovery-surface .discovery-results h2 { font-weight: 500; line-height: 1.3; overflow-wrap: anywhere; }
+.sonic-discovery-surface .discovery-results header { flex-wrap: wrap; }
+.sonic-discovery-surface .discovery-results button { min-height: 44px; }
+.sonic-discovery-surface .discovery-results header button { border-radius: 4px; font-weight: 500; }
+.sonic-analysis-status { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; padding-block: 18px; border-top: 1px solid var(--nm-border); }
+.sonic-analysis-status h3 { margin: 0 0 6px; font-size: 14px; font-weight: 500; }
+.sonic-analysis-status p { margin: 0; font-size: 12px; color: var(--nm-muted-foreground); }
+.sonic-analysis-status button,
+.discovery-error button { display: inline-flex; gap: 8px; align-items: center; min-height: 44px; padding: 8px 12px; border: 1px solid var(--nm-border); border-radius: 4px; background: transparent; color: var(--nm-foreground); }
+.discovery-error { display: grid; justify-items: start; gap: 12px; }
+.sonic-discovery-surface button:focus-visible,
+.sonic-discovery-surface input:focus-visible { outline: 2px solid var(--nm-accent); outline-offset: 3px; }
+.sonic-discovery-surface .discovery-result-list { max-height: none; }
+@media (min-width: 1100px) {
+  .sonic-discovery-surface .smart-grid,
+  .sonic-discovery-surface .radio-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+@media (max-width: 599px) {
+  .sonic-discovery-surface { padding-inline: 18px; }
+  .sonic-discovery-surface .smart-grid,
+  .sonic-discovery-surface .radio-grid { grid-template-columns: 1fr; }
+  .sonic-discovery-surface .discovery-results { padding: 12px; }
+}
+.sonic-discovery-surface .section-header { letter-spacing: normal; }
+.sonic-discovery-surface .section-header > svg { display: none; }
+.sonic-discovery-surface .atlas-journey-planner { padding: 18px; }
+.sonic-discovery-surface .atlas-journey-heading h2 { font-size: 20px; font-weight: 500; }
+.sonic-discovery-surface .atlas-journey-heading p { font-size: 13px; color: var(--nm-muted-foreground); line-height: 1.5; }
+.sonic-discovery-surface .atlas-waypoints > div { border-radius: 4px; }
+.sonic-discovery-surface .atlas-waypoints strong { font-size: 14px; font-weight: 500; }
+.sonic-discovery-surface .atlas-destination-picker input { min-height: 44px; padding: 8px 10px; border: 1px solid var(--nm-border); border-radius: 4px; color: var(--nm-foreground); background: transparent; }
+.sonic-discovery-surface input[type="range"] { accent-color: var(--nm-accent); }
+.phone-frame:has(.sonic-discovery-surface) { background: #090d10; }
+.phone-frame:has(.sonic-discovery-surface)::before { background: none; }
+@media (min-width: 900px) {
+  .native-desktop-shell:has(.sonic-discovery-surface) { background: #090d10; }
+  .native-desktop-shell:has(.sonic-discovery-surface) .desktop-brand-mark { background: none; border: 0; width: 28px; }
+  .native-desktop-shell:has(.sonic-discovery-surface) .desktop-brand-copy h1 { font-size: 18px; font-weight: 450; }
+  .native-desktop-shell:has(.sonic-discovery-surface) .desktop-brand-copy small { display: none; }
+  .native-desktop-shell:has(.sonic-discovery-surface) .primary-nav-button { font-weight: 400; }
+}
+.native-desktop-shell:has(.sonic-discovery-surface) { background: #090d10; }
+.sonic-discovery-surface .discovery-artist-actions { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto auto; gap: 10px; align-items: center; padding: 12px 0; }
+.sonic-discovery-surface .discovery-artist-actions .small-cover { width: 44px; height: 44px; border-radius: 4px; }
+.sonic-discovery-surface .discovery-artist-actions h3 { font-size: 14px; font-weight: 500; overflow-wrap: anywhere; }
+.sonic-discovery-surface .discovery-artist-actions button { width: auto; white-space: nowrap; padding: 8px 12px; border: 1px solid var(--nm-border); border-radius: 4px; font-size: 13px; }
+@media (max-width: 599px) {
+  .sonic-discovery-surface .discovery-artist-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .sonic-discovery-surface .discovery-artist-actions > div { grid-column: 1 / 3; grid-row: 1; margin-left: 54px; }
+  .sonic-discovery-surface .discovery-artist-actions button { grid-row: 2; }
+  .sonic-discovery-surface .discovery-artist-actions button:first-of-type { grid-column: 1; }
+  .sonic-discovery-surface .discovery-artist-actions button:last-of-type { grid-column: 2; }
+  .sonic-discovery-surface .discovery-artist-actions .small-cover { grid-column: 1; grid-row: 1; }
+  .sonic-discovery-surface .atlas-plan-controls button { min-height: 44px; }
+}

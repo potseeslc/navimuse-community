@@ -1,0 +1,29 @@
+{
+  "version": "0.2.0",
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "NaviMuse",
+        "url": "https://navimuse.example.com"
+      }
+    ]
+  },
+  "bundle": {
+    "iOS": {
+      "developmentTeam": "ABCDE12345",
+      "bundleVersion": "62",
+      "minimumSystemVersion": "17.0",
+      "frameworks": [
+        "MediaPlayer",
+        "AVKit",
+        "AVFoundation",
+        "CoreMedia",
+        "Network",
+        "CarPlay"
+      ],
+      "infoPlist": "Info.ios.plist",
+      "template": "src-tauri/ios/project.yml"
+    }
+  }
+}

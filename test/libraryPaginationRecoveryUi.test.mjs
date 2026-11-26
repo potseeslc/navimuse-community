@@ -1,0 +1,73 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { Window } from 'happy-dom';
+import { createServer } from 'vite';
+
+test('Library pagination retains loaded albums, retries the same cursor, and continues empty pages with focus intact', async () => {
+  const window = new Window({ url: 'http://localhost/' });
+  for (const key of ['window', 'document', 'Node', 'Element', 'HTMLElement', 'CustomEvent']) globalThis[key] = key === 'window' ? window : window[key];
+  globalThis.requestAnimationFrame = window.requestAnimationFrame.bind(window);
+  Object.defineProperty(globalThis, 'navigator', { value: window.navigator, configurable: true });
+  const album = i => ({ id: `album-${i}`, name: `Record ${i}`, artist: 'Artist' });
+  const requests = [];
+  let failPage = true;
+  let failInitial = true;
+  let releaseSlow;let slowSignal;
+  globalThis.fetch = async (input,init) => {
+    const url = new URL(String(input), 'http://localhost');
+    if (url.pathname.endsWith('/albums/album-151')) return Response.json({ album: { ...album(151), song: [{ id:'song', title:'Late track', duration:200 }] } });
+    const scope = url.searchParams.get('musicFolderId');
+    const offset = Number(url.searchParams.get('offset') || 0);
+    requests.push({scope,offset});
+    assert.equal(url.searchParams.get('sort'), 'newest');
+    if (scope === 'empty') return Response.json(offset === 0 ? {albums:[],page:{nextOffset:500,limit:500}} : {albums:[album(900)],page:{nextOffset:null,limit:500}});
+    if (scope === 'slow') {slowSignal=init.signal;
+      if (offset === 1) return new Promise(resolve => {releaseSlow = () => resolve(new Response('{}',{status:503}));});
+      return Response.json({albums:[album(500)],page:{nextOffset:1,limit:1}});
+    }
+    if (offset === 0 && failInitial) return new Response('{}',{status:503});
+    if (offset === 0) return Response.json({albums:Array.from({length:150},(_,i)=>album(i)),page:{nextOffset:150,limit:150}});
+    if (offset === 150) return failPage ? new Response('{}',{status:503}) : Response.json({albums:[album(149),album(150),album(151)],page:{nextOffset:152,limit:150}});
+    assert.equal(offset,152);
+    return Response.json({albums:[],page:{nextOffset:null,limit:150}});
+  };
+  const vite = await createServer({ server:{middlewareMode:true,hmr:false},appType:'custom',optimizeDeps:{noDiscovery:true} });
+  const React = await import('react');
+  const {createRoot} = await import('react-dom/client');
+  const {flushSync} = await import('react-dom');
+  const {LibrarySurface} = await vite.ssrLoadModule('/src/librarySearchSurfaces.jsx');
+  const node=document.createElement('div');document.body.append(node);const root=createRoot(node);
+  const wait=async predicate=>{for(let i=0;i<100;i++){if(predicate())return;await new Promise(r=>setTimeout(r,20));}assert.fail('Expected pagination state');};
+  const button=text=>[...node.querySelectorAll('button')].find(b=>b.textContent.trim()===text);
+  const cards=()=>node.querySelectorAll('.library-card');
+  const click=b=>{assert(b);b.focus();b.click();};
+  let started=null;
+  const render=scope=>flushSync(()=>root.render(React.createElement(LibrarySurface,{libraryKey:scope,browseKey:'albums',albumSort:'newest',settings:{},onStartAlbum:(value,index)=>{started={value,index};}})));
+  try {
+    render('music');await wait(()=>button('Retry loading albums'));
+    assert.equal(cards().length,0);assert.equal(requests.length,1);
+    failInitial=false;click(button('Retry loading albums'));
+    await wait(()=>cards().length===100);
+    assert.ok(document.activeElement===node.querySelector('h1'));
+    click(button('Show 50 more album results'));await wait(()=>cards().length===150);
+    const early=cards()[0],later=cards()[149],more=button('Load more albums');
+    click(more);await wait(()=>button('Retry loading more albums'));
+    assert.equal(cards().length,150);assert.ok(early.isConnected&&later.isConnected);
+    assert.ok(document.activeElement===more);assert.match(node.querySelector('[role="alert"]').textContent,/loaded albums are still available/);
+    failPage=false;click(button('Retry loading more albums'));await wait(()=>button('Show 2 more album results'));
+    assert.ok(document.activeElement===more);assert.ok(later.isConnected);assert.equal(started,null);
+    assert.deepEqual(requests.filter(x=>x.scope==='music').map(x=>x.offset),[0,0,150,150]);
+    click(button('Show 2 more album results'));await wait(()=>cards().length===152);
+    const last=cards()[151];click(last);await wait(()=>node.querySelector('[aria-label="Play track 1: Late track"]'));
+    node.querySelector('[aria-label="Play track 1: Late track"]').click();assert.equal(started.value.id,'album-151');assert.equal(started.index,0);
+    node.querySelector('[aria-label="Close album tracks"]').click();await wait(()=>document.activeElement===last);
+    click(button('Load more albums'));await wait(()=>!button('Loading more albums…')&&!button('Load more albums'));
+    assert.equal(cards().length,152);assert.ok(last.isConnected);
+    await wait(()=>document.activeElement===node.querySelector('.library-browse-count'));
+    render('slow');await wait(()=>cards().length===1&&button('Load more albums'));click(button('Load more albums'));await wait(()=>releaseSlow);
+    render('empty');assert.equal(slowSignal.aborted,true,'changing library cancels the in-flight album page');await wait(()=>button('Load more albums')&&node.textContent.includes('No matching albums in this part'));
+    releaseSlow();await new Promise(r=>setTimeout(r,40));assert.equal(node.querySelector('[role="alert"]'),null);
+    click(button('Load more albums'));await wait(()=>cards().length===1&&cards()[0].textContent.includes('Record 900'));
+    assert.deepEqual(requests.filter(x=>x.scope==='empty').map(x=>x.offset),[0,500]);
+  } finally {flushSync(()=>root.unmount());await vite.close();await window.happyDOM.close();}
+});

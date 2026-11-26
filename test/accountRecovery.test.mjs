@@ -1,0 +1,92 @@
+import {randomBytes} from 'node:crypto';
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {mkdtemp,rm} from 'node:fs/promises';
+import {join} from 'node:path';
+import {tmpdir} from 'node:os';
+import {DatabaseSync} from 'node:sqlite';
+import {openAccountStore,restoreAccountStoreBackup} from '../server/accountStore.mjs';
+import {ACCOUNT_RECOVERY_CODE_MS} from '../server/accountRecovery.mjs';
+import {accountCredentialFixture as credential} from '../test-support/accountCredentialFixture.mjs';
+async function setup(t){
+ const root=await mkdtemp(join(tmpdir(),'navimuse-recovery-'));let time=Date.now();
+ const path=join(root,'data'),store=await openAccountStore(path,{now:()=>time});
+ t.after(async()=>{store.close();await rm(root,{recursive:true,force:true});});
+ const owner=store.createFirstOwner({username:'owner',displayName:'Owner'},credential),listener=store.createListener(owner.id,{username:'listener',displayName:'Listener'},credential);
+ const session=id=>{const a=store.getAccount(id);return store.issuePasswordSession(id,{expectedGeneration:a.authorizationGeneration,expectedRevision:store.getPasswordCredential(id).revision,remember:true});};
+ return {root,path,store,owner,listener,session,advance:ms=>time+=ms};
+}
+test('recovery codes are owner-issued, stored as verifiers, single-use, and revoke only target sessions',async t=>{
+ const {path,store,owner,listener,session}=await setup(t),ownerSession=session(owner.id),listenerSession=session(listener.id);
+ assert.throws(()=>store.issueRecoveryCodeForSession(listenerSession.token,listener.id),/Owner/);
+ const grant=store.issueRecoveryCodeForSession(ownerSession.token,listener.id);
+ assert.match(grant.code,/^r1\.[A-Za-z0-9_-]{43}$/);
+ const db=new DatabaseSync(join(path,'accounts.sqlite'));t.after(()=>db.close());
+ assert(!JSON.stringify(db.prepare('SELECT * FROM account_recovery_codes').all()).includes(grant.code));
+ assert(store.authenticateSession(listenerSession.token),'Issuance alone must not sign out the target');
+ const named=username=>store.createPasskeyCeremony({purpose:'login',username,challenge:randomBytes(32).toString('base64url'),origin:'https://music.example.test',rpID:'music.example.test',bindingToken:'p1.'+randomBytes(32).toString('base64url')});
+ const ownerAttempt=named('owner'),listenerAttempt=named('listener');
+ assert.deepEqual(store.recoverPasswordWithCode(grant.code,credential),{ok:true});
+ assert.equal(db.prepare('SELECT count(*) AS n FROM passkey_ceremonies WHERE id=?').get(listenerAttempt.id).n,0);
+ assert.equal(db.prepare('SELECT count(*) AS n FROM passkey_login_targets WHERE ceremony_id=?').get(listenerAttempt.id).n,0);
+ assert.equal(db.prepare('SELECT count(*) AS n FROM passkey_login_targets WHERE ceremony_id=?').get(ownerAttempt.id).n,1);
+ assert.equal(store.getPasswordCredential(listener.id).revision,2);
+ assert.equal(store.getAccount(listener.id).authorizationGeneration,2);
+ assert.equal(store.authenticateSession(listenerSession.token),null);
+ assert.equal(store.refreshDevice(listenerSession.deviceToken),null);
+ assert(store.authenticateSession(ownerSession.token));
+ assert.equal(store.recoverPasswordWithCode(grant.code,credential),null);
+ assert.equal(store.getPasswordCredential(listener.id).revision,2);
+ assert.equal(db.prepare('SELECT count(*) AS n FROM account_recovery_codes').get().n,0);
+ assert.equal(db.prepare("SELECT count(*) AS n FROM account_events WHERE operation='password-recovered'").get().n,1);
+});
+test('replacement, expiry, future timestamps, and authorization changes invalidate recovery codes',async t=>{
+ const {store,owner,listener,session,advance}=await setup(t);let auth=session(owner.id);
+ const first=store.issueRecoveryCodeForSession(auth.token,listener.id),second=store.issueRecoveryCodeForSession(auth.token,listener.id);
+ assert.equal(store.recoverPasswordWithCode(first.code,credential),null);
+ advance(-1);assert.equal(store.recoverPasswordWithCode(second.code,credential),null);advance(1+ACCOUNT_RECOVERY_CODE_MS);
+ assert.equal(store.recoverPasswordWithCode(second.code,credential),null);
+ assert.throws(()=>store.issueRecoveryCodeForSession(auth.token,listener.id),/Recent authentication/);
+ auth=session(owner.id);const third=store.issueRecoveryCodeForSession(auth.token,listener.id);
+ store.setAccess(owner.id,listener.id,{owner:false,disabled:true});
+ assert.equal(store.recoverPasswordWithCode(third.code,credential),null);
+ assert.throws(()=>store.issueRecoveryCodeForSession(auth.token,listener.id),/Recovery unavailable/);
+ store.setAccess(owner.id,listener.id,{owner:false,disabled:false});
+ assert.equal(store.recoverPasswordWithCode(third.code,credential),null);
+ const fourth=store.issueRecoveryCodeForSession(auth.token,listener.id);
+ store.replaceOwnPassword(owner.id,{expectedGeneration:1,expectedRevision:1,credential});
+ assert.equal(store.recoverPasswordWithCode(fourth.code,credential),null);
+ assert.equal(store.recoverPasswordWithCode('r1.invalid',credential),null);
+});
+test('failed credential persistence rolls back consumption, session revocation and audit together',async t=>{
+ const {path,store,owner,listener,session}=await setup(t),auth=session(owner.id),target=session(listener.id),grant=store.issueRecoveryCodeForSession(auth.token,listener.id);
+ const db=new DatabaseSync(join(path,'accounts.sqlite'));t.after(()=>db.close());
+ db.exec("CREATE TRIGGER fail_recovery BEFORE UPDATE ON password_credentials BEGIN SELECT RAISE(ABORT,'fixture failure'); END;");
+ assert.throws(()=>store.recoverPasswordWithCode(grant.code,credential),/fixture failure/);
+ assert.equal(store.getPasswordCredential(listener.id).revision,1);assert(store.authenticateSession(target.token));
+ assert.equal(db.prepare("SELECT count(*) AS n FROM account_events WHERE operation='password-recovered'").get().n,0);
+ db.exec('DROP TRIGGER fail_recovery');assert.deepEqual(store.recoverPasswordWithCode(grant.code,credential),{ok:true});
+});
+test('restoring a backup cannot resurrect a recovery grant',async t=>{
+ const {root,store,owner,listener,session}=await setup(t),grant=store.issueRecoveryCodeForSession(session(owner.id).token,listener.id);
+ const backup=store.createBackup(join(root,'backups'));
+ const restoredPath=join(root,'restored');await restoreAccountStoreBackup(backup.path,restoredPath);
+ const restored=await openAccountStore(restoredPath);try{assert.equal(restored.recoverPasswordWithCode(grant.code,credential),null);assert.equal(restored.getPasswordCredential(listener.id).revision,1);}finally{restored.close();}
+});
+test('version-eight upgrade preserves identities and the worker serializes competing redemptions',async t=>{
+ const {openAccountStoreWorker}=await import('../server/accountStoreWorker.mjs');
+ const root=await mkdtemp(join(tmpdir(),'navimuse-recovery-worker-')),path=join(root,'data');
+ t.after(()=>rm(root,{recursive:true,force:true}));
+ let store=await openAccountStoreWorker(path);
+ const owner=await store.createFirstOwner({username:'owner',displayName:'Owner'},credential);
+ await store.close();
+ const db=new DatabaseSync(join(path,'accounts.sqlite'));db.exec('DROP TABLE passkey_login_targets; DROP TABLE account_recovery_codes; PRAGMA user_version=8');db.close();
+ store=await openAccountStoreWorker(path);t.after(()=>store.close());
+ assert.deepEqual(await store.getAccount(owner.id),owner);
+ const auth=await store.issuePasswordSession(owner.id,{expectedGeneration:1,expectedRevision:1});
+ const grant=await store.issueRecoveryCodeForSession(auth.token,owner.id);
+ const outcomes=await Promise.all([store.recoverPasswordWithCode(grant.code,credential),store.recoverPasswordWithCode(grant.code,credential)]);
+ assert.equal(outcomes.filter(x=>x?.ok).length,1);assert.equal(outcomes.filter(x=>x===null).length,1);
+ assert.equal((await store.getPasswordCredential(owner.id)).revision,2);
+ assert.equal(await store.authenticateSession(auth.token),null);
+});

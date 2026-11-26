@@ -1,0 +1,17 @@
+.loading-dots { display: inline-flex; align-items: center; justify-content: center; min-width: 64px; min-height: 32px; color: var(--nm-accent, #ff693e); vertical-align: middle; }
+.loading-dots-motion { display: flex; align-items: center; gap: 6px; width: 48px; height: 20px; }
+.loading-dots-motion > i { display: block; flex: 0 0 6px; width: 6px; height: 6px; border-radius: 50%; background: currentColor; animation: nm-loading-drift 1.65s infinite; animation-timing-function: linear; }
+.loading-dots-motion > i:nth-child(2) { animation-delay: .13s; }
+.loading-dots-motion > i:nth-child(3) { animation-delay: .26s; }
+@keyframes nm-loading-drift {
+  0% { transform: translateX(-9px) scale(.7); opacity: .18; }
+  23% { transform: translateX(-2px) scale(1); opacity: 1; }
+  62% { transform: translateX(2px) scale(1); opacity: 1; }
+  82%, 100% { transform: translateX(16px) scale(.7); opacity: 0; }
+}
+.transport-state .loading-dots, .player-transport-state .loading-dots { min-height: 20px; }
+.home-load-state .loading-dots { display: flex; }
+@media (prefers-reduced-motion: reduce) {
+  .loading-dots-motion > i { animation: none; opacity: .8; transform: none; }
+}
+.home-surface .home-load-state:not(.error) { display: flex; justify-content: center; align-items: center; min-height: 48px; margin-block: 8px; padding: 0; border: 0; background: transparent; }

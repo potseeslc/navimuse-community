@@ -1,0 +1,14 @@
+import { ATLAS_CONTRACT_VERSION, BRANCH_B_LIMITS } from './constants.js';
+import { assertNoForbiddenAtlasFields, contractVersion, deeplyFreeze, exactKeys, fail, literal, opaqueId, safeInteger, unique } from './validation.js';
+
+export function createOrderedWaypointPlanRequest({ requestId, waypoints, targetTrackCount = BRANCH_B_LIMITS.defaultTracksPerSegment }) {
+  const waypointList=(Array.isArray(waypoints)?waypoints:[]).map((waypoint,index)=>typeof waypoint==='string'?{waypointId:`waypoint-${index+1}`,pointId:waypoint}:waypoint);
+  return parseOrderedWaypointPlanRequest({contractVersion:ATLAS_CONTRACT_VERSION,kind:'ordered-waypoint-plan-request',requestId,waypoints:waypointList,segmentOptions:waypointList.slice(0,-1).map((waypoint,index)=>({fromWaypointId:waypoint.waypointId,toWaypointId:waypointList[index+1].waypointId,targetTrackCount,pathFixSize:false}))});
+}
+
+export function parseOrderedWaypointPlanRequest(value) {
+  const keys=['contractVersion','kind','requestId','waypoints','segmentOptions'];exactKeys(value,keys,keys,'request');if(!Array.isArray(value.waypoints)||value.waypoints.length<BRANCH_B_LIMITS.minWaypoints||value.waypoints.length>BRANCH_B_LIMITS.maxWaypoints)fail('request.waypoints',`expected ${BRANCH_B_LIMITS.minWaypoints}..${BRANCH_B_LIMITS.maxWaypoints} waypoints`);if(!Array.isArray(value.segmentOptions)||value.segmentOptions.length!==value.waypoints.length-1)fail('request.segmentOptions','must describe every adjacent waypoint pair');assertNoForbiddenAtlasFields(value,'request',{maxNodes:1_000});contractVersion(value.contractVersion,'request.contractVersion');literal(value.kind,'ordered-waypoint-plan-request','request.kind');
+  const waypoints=value.waypoints.map((w,i)=>{const p=`request.waypoints[${i}]`;exactKeys(w,['waypointId','pointId'],['waypointId','pointId'],p);return{waypointId:opaqueId(w.waypointId,`${p}.waypointId`),pointId:opaqueId(w.pointId,`${p}.pointId`)}});unique(waypoints.map(w=>w.waypointId),'request.waypoints.waypointId');
+  const segmentOptions=value.segmentOptions.map((s,i)=>{const p=`request.segmentOptions[${i}]`;exactKeys(s,['fromWaypointId','toWaypointId','targetTrackCount','pathFixSize'],['fromWaypointId','toWaypointId','targetTrackCount','pathFixSize'],p);if(s.fromWaypointId!==waypoints[i].waypointId||s.toWaypointId!==waypoints[i+1].waypointId)fail(p,'segment must match adjacent waypoint order');return{fromWaypointId:opaqueId(s.fromWaypointId,`${p}.fromWaypointId`),toWaypointId:opaqueId(s.toWaypointId,`${p}.toWaypointId`),targetTrackCount:safeInteger(s.targetTrackCount,`${p}.targetTrackCount`,{min:BRANCH_B_LIMITS.minTracksPerSegment,max:BRANCH_B_LIMITS.maxTracksPerSegment}),pathFixSize:literal(s.pathFixSize,false,`${p}.pathFixSize`)}});
+  return deeplyFreeze({contractVersion:ATLAS_CONTRACT_VERSION,kind:'ordered-waypoint-plan-request',requestId:opaqueId(value.requestId,'request.requestId'),waypoints,segmentOptions});
+}

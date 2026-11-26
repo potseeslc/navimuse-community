@@ -1,0 +1,48 @@
+services:
+  pocket-id-backend:
+    image: ghcr.io/pocket-id/pocket-id@sha256:01540977dcf4c7b41b1159f34d68e4632f2658d62790e460ca65a42722b13c4a
+    container_name: pocket-id-backend
+    restart: unless-stopped
+    environment:
+      APP_URL: https://id.example.com
+      ENCRYPTION_KEY_FILE: /run/secrets/pocket-id-encryption-key
+      TRUST_PROXY: 172.21.0.0/16
+      PUID: "501"
+      PGID: "20"
+    volumes:
+      - pocket_id_data:/app/data
+      - ./encryption.key:/run/secrets/pocket-id-encryption-key:ro
+    healthcheck:
+      test: ["CMD", "/app/pocket-id", "healthcheck"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    networks:
+      - music_services
+  pocket-id:
+    image: caddy@sha256:5f5c8640aae01df9654968d946d8f1a56c497f1dd5c5cda4cf95ab7c14d58648
+    container_name: pocket-id
+    restart: unless-stopped
+    depends_on:
+      pocket-id-backend:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:1411:1411"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:1411/.well-known/apple-app-site-association"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    networks:
+      - music_services
+networks:
+  music_services:
+    name: music_services
+    external: true
+volumes:
+  pocket_id_data:
+    external: true
+    name: pocket-id_pocket_id_data

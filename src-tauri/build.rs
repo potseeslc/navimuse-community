@@ -1,0 +1,39 @@
+fn main() {
+    if std::env::var("CARGO_CFG_TARGET_OS").as_deref() == Ok("ios") {
+        cc::Build::new().file("ios/shell.m").file("ios/native-audio.m").file("ios/offline-access.m").file("ios/offline-store.m").file("ios/offline-downloads.m").flag("-fobjc-arc").compile("navimuse_ios_shell");
+        println!("cargo:rustc-link-lib=framework=CarPlay");
+        println!("cargo:rerun-if-changed=ios/carplay.h");
+        println!("cargo:rerun-if-changed=ios/network-handoff.h");
+        println!("cargo:rustc-link-lib=framework=MediaPlayer");
+        println!("cargo:rustc-link-lib=framework=AVFoundation");
+        println!("cargo:rustc-link-lib=framework=AVKit");
+        println!("cargo:rustc-link-lib=framework=CoreMedia");
+        println!("cargo:rustc-link-lib=framework=Network");
+        for source in ["offline-access", "offline-store", "offline-downloads"] {
+            println!("cargo:rerun-if-changed=ios/{source}.m");
+            println!("cargo:rerun-if-changed=ios/{source}.h");
+        }
+        println!("cargo:rerun-if-changed=../.scratch/ios-online-shell.html");
+        println!("cargo:rerun-if-changed=../.scratch/ios-offline-shell.html");
+        println!("cargo:rerun-if-changed=ios/native-audio.m");
+        println!("cargo:rerun-if-changed=ios/album-queue.h");
+        println!("cargo:rerun-if-changed=ios/listening-ledger.h");
+        println!("cargo:rerun-if-changed=ios/download-validation.h");
+        println!("cargo:rerun-if-changed=ios/nearby-speakers.h");
+        println!("cargo:rerun-if-changed=ios/media-policy.h");
+        println!("cargo:rerun-if-changed=ios/navidrome-id.h");
+        println!("cargo:rerun-if-changed=ios/stream-recovery.h");
+        println!("cargo:rerun-if-changed=ios/media-services-recovery.h");
+        println!("cargo:rerun-if-changed=ios/playback-checkpoint.h");
+        println!("cargo:rerun-if-changed=ios/stream-cache.h");
+        println!("cargo:rerun-if-changed=ios/safety-cache-policy.h");
+        println!("cargo:rerun-if-changed=ios/playback-start.h");
+        println!("cargo:rerun-if-changed=ios/playback-log.h");
+        println!("cargo:rerun-if-changed=ios/stream-timing.h");
+        println!("cargo:rerun-if-changed=ios/stream-details.h");
+        println!("cargo:rerun-if-changed=ios/navigation-recovery.h");
+        println!("cargo:rerun-if-changed=ios/shell.m");
+        println!("cargo:rerun-if-changed=ios/track-controls.js");
+    }
+    tauri_build::build();
+}
