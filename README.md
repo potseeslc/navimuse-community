@@ -67,8 +67,9 @@ use an isolated data directory:
 NAVIMUSE_DATA_DIR="$(mktemp -d)" npm test
 ```
 
-Some native and browser harnesses require Xcode, Apple SDKs, or a browser and
-may skip when those tools are unavailable. Historical QA evidence is not included.
+Native and browser harnesses require additional tooling. The native simulator
+scripts require Xcode and a booted simulator; they do not automatically skip
+missing setup. Historical QA evidence is not included.
 See [release notes](docs/COMMUNITY_RELEASE.md) for the validation actually performed.
 
 ## Native clients and speaker bridge
